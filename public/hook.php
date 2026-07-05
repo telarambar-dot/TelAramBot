@@ -24,6 +24,8 @@ use RubikaBot\Bot;
         $text = isset($update->new_message) ? ($update->new_message->text ?? '') : '';
         $senderFirstName = isset($update->new_message) ? ($update->new_message->first_name ?? null) : null;
         $senderLastName = isset($update->new_message) ? ($update->new_message->last_name ?? null) : null;
+        $senderId = isset($update->new_message) ? ($update->new_message->sender_id ?? null) : null;
+        $senderType = isset($update->new_message) ? ($update->new_message->sender_type ?? null) : null;
 
         // Save to a per-message log
         $logDir = __DIR__ . '/../logs';
@@ -35,6 +37,19 @@ use RubikaBot\Bot;
 
         if ($text === '/start' && $chatId) {
             $name = trim(($senderFirstName ? $senderFirstName : '') . ' ' . ($senderLastName ? $senderLastName : ''));
+            if (!$name && $senderId) {
+                try {
+                    $chatInfo = $bot->getChat(array('chat_id' => $senderId));
+                    if (isset($chatInfo['data']['first_name'])) {
+                        $name = $chatInfo['data']['first_name'];
+                        if (!empty($chatInfo['data']['last_name'])) {
+                            $name .= ' ' . $chatInfo['data']['last_name'];
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    // ignore getChat failures
+                }
+            }
             if (!$name) {
                 try {
                     $chatInfo = $bot->getChat(array('chat_id' => $chatId));
