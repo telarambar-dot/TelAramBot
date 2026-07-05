@@ -1,10 +1,10 @@
 <?php
-// CLI monitor for incoming Rubika requests log (req.txt)
+// CLI monitor for incoming Rubika request logs (UserMessageLog.txt)
 
 function usage()
 {
     echo "Usage: php tools/monitor.php [--file=path] [--lines=N] [--follow] [--chat=CHAT_ID]\n";
-    echo "  --file=path   Path to req.txt (default: req.txt in project root)\n";
+    echo "  --file=path   Path to log file (default: UserMessageLog.txt in project root)\n";
     echo "  --lines=N     Show last N entries then exit (default: 10)\n";
     echo "  --follow      Follow new entries (like tail -f)\n";
     echo "  --chat=ID     Filter by chat_id (only show entries for this chat)\n";
@@ -29,7 +29,7 @@ foreach ($argv as $arg) {
     }
 }
 
-$file = isset($opts['file']) ? $opts['file'] : __DIR__ . '/../req.txt';
+$file = isset($opts['file']) ? $opts['file'] : __DIR__ . '/../UserMessageLog.txt';
 $lines = isset($opts['lines']) ? max(0, (int)$opts['lines']) : 10;
 $follow = !empty($opts['follow']);
 $chatFilter = isset($opts['chat']) ? $opts['chat'] : null;
@@ -76,6 +76,9 @@ function processLine($line, $chatFilter = null, $useColor = true)
 
     $timestamp = isset($obj['timestamp']) ? $obj['timestamp'] : null;
     $request = isset($obj['request']) ? $obj['request'] : $obj;
+    if (isset($request['payload'])) {
+        $request = $request['payload'];
+    }
 
     // Try to extract common fields
     $type = $request['type'] ?? ($request['update']['type'] ?? ($request['inline_message']['type'] ?? ''));
@@ -83,6 +86,8 @@ function processLine($line, $chatFilter = null, $useColor = true)
     $text = '';
     if (isset($request['new_message']['text'])) {
         $text = $request['new_message']['text'];
+    } elseif (isset($request['update']['new_message']['text'])) {
+        $text = $request['update']['new_message']['text'];
     } elseif (isset($request['inline_message']['text'])) {
         $text = $request['inline_message']['text'];
     } elseif (isset($request['text'])) {

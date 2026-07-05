@@ -33,14 +33,15 @@ if ($err) {
 }
 fwrite(STDOUT, "RESPONSE: {$response}\n");
 
-if (is_file(__DIR__ . '/../req.txt')) {
-    $lines = file(__DIR__ . '/../req.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+$logFile = __DIR__ . '/../UserMessageLog.txt';
+if (is_file($logFile)) {
+    $lines = file($logFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     $count = count($lines);
-    fwrite(STDOUT, "REQ.TXT LINES: {$count}\n");
+    fwrite(STDOUT, "UserMessageLog.txt LINES: {$count}\n");
     $tail = array_slice($lines, -5);
     foreach ($tail as $line) {
         fwrite(STDOUT, $line . "\n");
     }
 } else {
-    fwrite(STDOUT, "req.txt not found\n");
+    fwrite(STDOUT, "UserMessageLog.txt not found\n");
 }

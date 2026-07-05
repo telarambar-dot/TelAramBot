@@ -6,6 +6,54 @@ require_once __DIR__ . '/../src/Enums/Enums.php';
 
 use RubikaBot\Bot;
 
+function getRequestHeaders(): array
+{
+    if (function_exists('apache_request_headers')) {
+        return apache_request_headers();
+    }
+
+    $headers = array();
+    foreach ($_SERVER as $name => $value) {
+        if (substr($name, 0, 5) === 'HTTP_') {
+            $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+        }
+    }
+    return $headers;
+}
+
+function logWebhookRequest(array $entry): void
+{
+    $logFile = __DIR__ . '/../UserMessageLog.txt';
+    @file_put_contents($logFile, json_encode($entry, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . PHP_EOL, FILE_APPEND | LOCK_EX);
+}
+
+function buildWebhookRequestEntry(string $rawBody): array
+{
+    $payload = null;
+    $jsonError = null;
+    if ($rawBody !== '') {
+        $decoded = json_decode($rawBody, true);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            $payload = $decoded;
+        } else {
+            $jsonError = json_last_error_msg();
+        }
+    }
+
+    return array(
+        'timestamp' => date('c'),
+        'method' => $_SERVER['REQUEST_METHOD'] ?? 'UNKNOWN',
+        'uri' => $_SERVER['REQUEST_URI'] ?? '',
+        'remote_addr' => $_SERVER['REMOTE_ADDR'] ?? '',
+        'query' => $_GET,
+        'post' => $_POST,
+        'headers' => getRequestHeaders(),
+        'raw_body' => $rawBody,
+        'payload' => $payload,
+        'json_error' => $jsonError,
+    );
+}
+
 function saveUserMessage(array $payload): void
 {
     $logFile = __DIR__ . '/../UserMessageLog.txt';
@@ -135,6 +183,10 @@ function registerHandlers(Bot $bot): void
     });
 }
 
+$rawRequestBody = file_get_contents('php://input');
+$requestEntry = buildWebhookRequestEntry($rawRequestBody);
+logWebhookRequest($requestEntry);
+
 $token = getWebhookToken();
 if (!$token) {
     http_response_code(400);
@@ -175,10 +227,9 @@ if ((isset($_GET['set']) && $_GET['set'] === '1') || isset($_GET['url'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $raw = file_get_contents('php://input');
-    $data = json_decode($raw, true);
+    $data = $requestEntry['payload'];
     if (!is_array($data)) {
-        saveInvalidWebhookPayload($raw, json_last_error_msg());
+        saveInvalidWebhookPayload($rawRequestBody, $requestEntry['json_error'] ?? 'Invalid JSON');
         http_response_code(400);
         echo "Invalid JSON payload\n";
         exit(1);
