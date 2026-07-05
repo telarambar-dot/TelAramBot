@@ -55,8 +55,12 @@ function getChatName(Bot $bot, string $chatId): ?string
     return null;
 }
 
-function getUserName(array $update, Bot $bot): string
+function getUserName($update, Bot $bot): string
 {
+    if (!is_array($update)) {
+        $update = json_decode(json_encode($update), true);
+    }
+
     $firstName = $update['new_message']['first_name'] ?? null;
     $lastName = $update['new_message']['last_name'] ?? null;
     $name = trim(($firstName ?? '') . ' ' . ($lastName ?? ''));
@@ -106,13 +110,14 @@ function logIncomingMessage(array $update): void
 function registerHandlers(Bot $bot): void
 {
     $bot->dispatcher()->onNewMessage(function($update) use ($bot) {
-        $chatId = $update->chat_id ?? ($update->new_message->chat_id ?? null);
-        $text = $update->new_message->text ?? '';
+        $updateData = json_decode(json_encode($update), true);
+        $chatId = $updateData['chat_id'] ?? ($updateData['new_message']['chat_id'] ?? null);
+        $text = $updateData['new_message']['text'] ?? '';
 
-        logIncomingMessage((array)$update);
+        logIncomingMessage($updateData);
 
         if ($text === '/start' && $chatId) {
-            $name = getUserName((array)$update, $bot);
+            $name = getUserName($updateData, $bot);
             try {
                 $bot->sendMessage($chatId, "سلام {$name}! خوش آمدیدی به ربات ما.");
             } catch (\Throwable $e) {
