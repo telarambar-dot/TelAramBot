@@ -67,3 +67,5 @@ array (
     'chat_id' => '54321',
   ),
 )
+{"timestamp":"2026-07-05T13:14:48.0382543+03:30","request":{"update":{"type":"NewMessage","chat_id":"12345","new_message":{"message_id":"m1","text":"سلام از تست 1"}}}}
+{"timestamp":"2026-07-05T13:14:48.0548918+03:30","request":{"inline_message":{"sender_id":"u2","text":"تست اینلاین","message_id":"im1","chat_id":"54321"}}}
