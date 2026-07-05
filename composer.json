@@ -1,0 +1,9 @@
+{
+  "name": "vam/rubika-sdk-r",
+  "description": "Rubika bot SDK (PHP) - local workspace autoload",
+  "autoload": {
+    "psr-4": {
+      "RubikaBot\\": "src/"
+    }
+  }
+}

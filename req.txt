@@ -1,0 +1,69 @@
+[2026-07-05 07:55:46]
+array (
+  'update' => 
+  array (
+    'type' => 'NewMessage',
+    'chat_id' => '12345',
+    'new_message' => 
+    array (
+      'message_id' => 'm1',
+      'text' => 'hello world',
+    ),
+  ),
+)
+[2026-07-05 07:55:46]
+array (
+  'inline_message' => 
+  array (
+    'sender_id' => 'u1',
+    'text' => 'inline text',
+    'message_id' => 'im1',
+    'chat_id' => '54321',
+  ),
+)
+[2026-07-05 07:56:02]
+array (
+  'update' => 
+  array (
+    'type' => 'NewMessage',
+    'chat_id' => '12345',
+    'new_message' => 
+    array (
+      'message_id' => 'm1',
+      'text' => 'hello world',
+    ),
+  ),
+)
+[2026-07-05 07:56:02]
+array (
+  'inline_message' => 
+  array (
+    'sender_id' => 'u1',
+    'text' => 'inline text',
+    'message_id' => 'im1',
+    'chat_id' => '54321',
+  ),
+)
+[2026-07-05 08:04:02]
+array (
+  'update' => 
+  array (
+    'type' => 'NewMessage',
+    'chat_id' => '12345',
+    'new_message' => 
+    array (
+      'message_id' => 'm1',
+      'text' => 'hello world',
+    ),
+  ),
+)
+[2026-07-05 08:04:02]
+array (
+  'inline_message' => 
+  array (
+    'sender_id' => 'u1',
+    'text' => 'inline text',
+    'message_id' => 'im1',
+    'chat_id' => '54321',
+  ),
+)
