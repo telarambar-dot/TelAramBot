@@ -46,44 +46,16 @@ function readLastLines($filePath, $numLines)
         return array();
     }
 
-    $fp = fopen($filePath, 'r');
-    if (!$fp) {
+    $lines = @file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    if (!is_array($lines)) {
         return array();
     }
 
-    $pos = -1;
-    $lines = array();
-    $current = '';
-    fseek($fp, 0, SEEK_END);
-    $fileSize = ftell($fp);
-    if ($fileSize === 0) {
-        fclose($fp);
-        return array();
+    if ($numLines >= count($lines)) {
+        return $lines;
     }
 
-    while (count($lines) < $numLines && ftell($fp) > 0) {
-        $pos--;
-        fseek($fp, $pos, SEEK_END);
-        $char = fgetc($fp);
-        if ($char === "\n") {
-            $lines[] = strrev($current);
-            $current = '';
-        } else {
-            $current .= $char;
-        }
-        if (ftell($fp) === 1) {
-            // beginning of file
-            fseek($fp, 0);
-            $rest = fgets($fp);
-            $current .= $rest;
-            $lines[] = strrev($current);
-            break;
-        }
-    }
-
-    fclose($fp);
-    $lines = array_reverse($lines);
-    return $lines;
+    return array_slice($lines, -$numLines);
 }
 
 function colorize($text, $colorCode)

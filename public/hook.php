@@ -22,6 +22,9 @@ use RubikaBot\Bot;
     $bot->dispatcher()->onNewMessage(function($update) use ($bot) {
         $chatId = $update->chat_id ?? ($update->new_message->chat_id ?? null);
         $text = isset($update->new_message) ? ($update->new_message->text ?? '') : '';
+        $senderFirstName = isset($update->new_message) ? ($update->new_message->first_name ?? null) : null;
+        $senderLastName = isset($update->new_message) ? ($update->new_message->last_name ?? null) : null;
+
         // Save to a per-message log
         $logDir = __DIR__ . '/../logs';
         if (!is_dir($logDir)) {
@@ -29,6 +32,32 @@ use RubikaBot\Bot;
         }
         $entry = array('time' => time(), 'chat_id' => $chatId, 'text' => $text);
         @file_put_contents($logDir . '/messages.log', json_encode($entry, JSON_UNESCAPED_UNICODE) . PHP_EOL, FILE_APPEND);
+
+        if ($text === '/start' && $chatId) {
+            $name = trim(($senderFirstName ? $senderFirstName : '') . ' ' . ($senderLastName ? $senderLastName : ''));
+            if (!$name) {
+                try {
+                    $chatInfo = $bot->getChat(array('chat_id' => $chatId));
+                    if (isset($chatInfo['data']['first_name'])) {
+                        $name = $chatInfo['data']['first_name'];
+                        if (!empty($chatInfo['data']['last_name'])) {
+                            $name .= ' ' . $chatInfo['data']['last_name'];
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    // ignore getChat failures
+                }
+            }
+            if (!$name) {
+                $name = 'دوست گرامی';
+            }
+
+            try {
+                $bot->sendMessage($chatId, "سلام {$name}! خوش آمدیدی به ربات ما.");
+            } catch (\Throwable $e) {
+                // ignore send failures
+            }
+        }
 
         // Optional auto-reply if ?auto_reply=1 is set
         if (isset($_GET['auto_reply']) && $_GET['auto_reply'] == '1' && $chatId) {
